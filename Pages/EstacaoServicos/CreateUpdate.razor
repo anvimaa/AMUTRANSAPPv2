@@ -1,0 +1,88 @@
+@page "/create-update-estacaoservico"
+@attribute [Authorize]
+
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+
+<PageTitle>Estação de Serviço</PageTitle>
+
+<RadzenColumn SizeMD=12>
+    <RadzenAlert Shade="Shade.Lighter" Variant="Radzen.Variant.Filled" Size="AlertSize.Small" AlertStyle="AlertStyle.Danger" Visible="@errorVisible">
+        Erro ao Salvar: @errorMessage...
+    </RadzenAlert>
+
+    <RadzenTemplateForm TItem="EstacaoServico" Data="@entity" Visible="@(entity != null)" Submit="@FormSubmit">
+        <RadzenStack>
+
+            <RadzenFormField Text="Nome da Estação de Serviço" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.Nome" Name="Nome" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Nome" Text="Campo Obrigatorio" Popup="true" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Localização da Estação de Serviço" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.Localizacao" Name="Localizacao" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Localizacao" Text="Campo Obrigatorio" Popup="true" />
+                </Helper>
+            </RadzenFormField>
+
+        </RadzenStack>
+        <RadzenStack style="margin-top:1rem;" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" ButtonType="ButtonType.Submit" Icon="save" Text="Salvar" Variant="Radzen.Variant.Filled" />
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Cancelar" Variant="Radzen.Variant.Filled" Click="@CancelButtonClick" Icon="cancel" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenColumn>
+
+@code {
+    [Parameter]
+    public int IdEntity { get; set; } = 0;
+
+    EstacaoServico entity = new();
+    bool errorVisible;
+    string errorMessage="";
+    bool isEdit = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(IdEntity>0)
+        {
+            entity = await service.GetEstacaoServicoById(IdEntity);
+            isEdit = true;
+        }
+    }
+
+    async Task FormSubmit()
+    {
+        try
+        {
+            EstacaoServico res;
+            if (isEdit){
+                res = await service.UpdateEstacaoServico(IdEntity, entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Editado com sucesso!");
+            }
+            else{
+                res = await service.CreateEstacaoServico(entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Cadastrado com sucesso!");
+            }
+            dialog.Close(res);
+        }
+        catch (Exception ex)
+        {
+            errorVisible = true;
+            errorMessage=ex.Message;
+        }
+    }
+
+    protected async Task CancelButtonClick(MouseEventArgs args)
+    {
+        dialog.Close(null);
+    }
+}

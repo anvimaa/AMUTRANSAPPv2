@@ -1,0 +1,24 @@
+﻿<RadzenCard Style="width: 100%;" Class="rz-border-radius-3">
+    <RadzenRow Gap="0.5rem">
+        <RadzenColumn Size="8" Class="rz-text-truncate">
+            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@Model.Title" Class="rz-mr-1" IsPill="true" />
+        </RadzenColumn>
+        <RadzenColumn Size="4" Class="rz-text-align-right">
+            <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Shade="Shade.Lighter" Text="@Model.TotalGeral.ToString()" IsPill="true" />
+        </RadzenColumn>
+    </RadzenRow>
+    <hr style="border: none; background-color: rgba(0,0,0,.08); height: 1px; margin: 1rem 0;" />
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+        <RadzenIcon Icon="person" IconStyle="Radzen.IconStyle.Success" />
+        <RadzenStack Gap="0">
+            <RadzenText TextStyle="TextStyle.Body2" Class="rz-mb-0">Total Recebidos: @Model.TotalValido</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Class="rz-mb-0">Total Entregues: @Model.TotalInvalido</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Class="rz-mb-0">Total Por Entregar: @Model.TotalInvalido</RadzenText>
+        </RadzenStack>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public HomeInfoModel Model { get; set; }
+}

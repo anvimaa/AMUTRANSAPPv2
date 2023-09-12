@@ -1,0 +1,131 @@
+@page "/create-update-movimento"
+@attribute [Authorize]
+
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+
+<PageTitle>Movimentos</PageTitle>
+
+<RadzenColumn SizeMD=12>
+    <RadzenAlert Shade="Shade.Lighter" Variant="Radzen.Variant.Filled" Size="AlertSize.Small" AlertStyle="AlertStyle.Danger" Visible="@errorVisible">
+        Erro ao Salvar: @errorMessage...
+    </RadzenAlert>
+
+    <RadzenTemplateForm TItem="Movimento" Data="@entity" Visible="@(entity != null)" Submit="@FormSubmit">
+        <RadzenStack>
+
+            <RadzenFormField Text="Assunto" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextArea style="display: block; width: 100%" @bind-Value="@entity.Assunto" Name="Assunto" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Assunto" Text="Campo Obrigatorio" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Proveniencia" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Proveniencia" Name="Proveniencia" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Proveniencia" Text="Campo Obrigatorio" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Despacho" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Despacho" Name="Despacho" />
+                        </ChildContent>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Oficio" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Oficio" Name="Oficio" />
+                        </ChildContent>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenFormField Text="Data de Entrada" Variant="Variant.Flat">
+                <ChildContent>
+                    <RadzenDatePicker @bind-Value=@entity.DataEntrada
+                                      ShowTime="true"
+                                      Name="DataEntrada"
+                                      ShowSeconds="false"
+                                      HoursStep="1"
+                                      MinutesStep="1"
+                                      DateFormat="dd/MM/yyyy HH:mm" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="DataEntrada" Text="Campo Obrigatorio" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Observação" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextArea style="display: block; width: 100%" @bind-Value="@entity.OBS" Name="OBS" />
+                </ChildContent>
+            </RadzenFormField>
+
+        </RadzenStack>
+        <RadzenStack style="margin-top:1rem;" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" ButtonType="ButtonType.Submit" Icon="save" Text="Salvar" Variant="Radzen.Variant.Filled" />
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Cancelar" Variant="Radzen.Variant.Filled" Click="@CancelButtonClick" Icon="cancel" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenColumn>
+
+@code {
+    [Parameter]
+    public int IdEntity { get; set; } = 0;
+
+    Movimento entity = new();
+    bool errorVisible;
+    string errorMessage = "";
+    bool isEdit = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        entity.TipoMovimento = "Entrada";
+        entity.DataEntrada = DateTime.Now;
+        if (IdEntity > 0)
+        {
+            entity = await service.GetMovimentoById(IdEntity);
+            isEdit = true;
+        }
+    }
+
+    async Task FormSubmit()
+    {
+        try
+        {
+            Movimento res;
+            if (isEdit)
+            {
+                res = await service.UpdateMovimento(IdEntity, entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Editado com sucesso!");
+            }
+            else
+            {
+                entity.DataEntrada = DateTime.Now;
+                res = await service.CreateMovimento(entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Cadastrado com sucesso!");
+            }
+            dialog.Close(res);
+        }
+        catch (Exception ex)
+        {
+            errorVisible = true;
+            errorMessage = ex.Message;
+        }
+    }
+
+    protected async Task CancelButtonClick(MouseEventArgs args)
+    {
+        dialog.Close(null);
+    }
+}

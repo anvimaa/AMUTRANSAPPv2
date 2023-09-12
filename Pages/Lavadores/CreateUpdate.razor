@@ -1,0 +1,115 @@
+@page "/create-update-lavador"
+@attribute [Authorize]
+
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+
+<PageTitle>Lavadores</PageTitle>
+
+<RadzenColumn SizeMD=12>
+    <RadzenAlert Shade="Shade.Lighter" Variant="Radzen.Variant.Filled" Size="AlertSize.Small" AlertStyle="AlertStyle.Danger" Visible="@errorVisible">
+        Erro ao Salvar: @errorMessage...
+    </RadzenAlert>
+
+    <RadzenTemplateForm TItem="Lavador" Data="@entity" Visible="@(entity != null)" Submit="@FormSubmit">
+        <RadzenStack>
+            <RadzenFormField Text="Nome" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.Nome" Name="Nome" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Nome" Text="Campo Obrigatorio" Popup="false" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="BI" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.BI" Name="BI" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="BI" Text="Campo Obrigatorio" Popup="false" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Função" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.Funcao" Name="Funcao" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Funcao" Text="Campo Obrigatorio" Popup="false" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Telefone" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity!.Telefone" Name="Telefone" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Telefone" Text="Campo Obrigatorio" Popup="false" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="Estação de Serviço" Variant="Variant.Outlined">
+                <ChildContent>
+                    <RadzenDropDownDataGrid Name="EstacaoServicoId" @bind-Value=@entity.EstacaoServicoId Data=@entities TextProperty="Nome" ValueProperty="Id" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="EstacaoServicoId" Text="Campo Obrigatorio" Popup="false" />
+                </Helper>
+            </RadzenFormField>
+        </RadzenStack>
+        <RadzenStack style="margin-top:1rem;" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" ButtonType="ButtonType.Submit" Icon="save" Text="Salvar" Variant="Radzen.Variant.Filled" />
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Cancelar" Variant="Radzen.Variant.Filled" Click="@CancelButtonClick" Icon="cancel" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenColumn>
+
+@code {
+    [Parameter]
+    public int IdEntity { get; set; } = 0;
+
+    Lavador entity = new();
+    IEnumerable<EstacaoServico> entities;
+    bool errorVisible;
+    string errorMessage="";
+    bool isEdit = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        entities = await service.GetEstacaoServicos(new Query { Filter = $@"i => i.Nome.Contains(@0)", FilterParameters = new object[] { "" }});
+        if(IdEntity>0)
+        {
+            entity = await service.GetLavadorById(IdEntity);
+            isEdit = true;
+        }
+    }
+
+    async Task FormSubmit()
+    {
+        try
+        {
+            Lavador res;
+            if (isEdit){
+                res = await service.UpdateLavador(IdEntity, entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Editado com sucesso!");
+            }
+            else{
+                res = await service.CreateLavador(entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Cadastrado com sucesso!");
+            }
+            dialog.Close(res);
+        }
+        catch (Exception ex)
+        {
+            errorVisible = true;
+            errorMessage=ex.Message;
+        }
+    }
+
+    protected async Task CancelButtonClick(MouseEventArgs args)
+    {
+        dialog.Close(null);
+    }
+}

@@ -1,0 +1,257 @@
+@page "/licencas"
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navegation
+@inject ApplicationServices appService
+
+@attribute [Authorize]
+
+<PageTitle>@title</PageTitle>
+
+<RadzenStack>
+
+    <RadzenRow AlignItems="AlignItems.Center">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenText Text="@title" TextStyle="TextStyle.H5" TagName="TagName.H5" style="margin: 0" />
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" Text="Emitir" Click="@AddButtonClick" Variant="Variant.Flat" Size="Radzen.ButtonSize.Small" />
+                @if (entities is not null && entities.Count() > 0)
+                {
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Text="Exportar" Value="xlsx" Icon="border_all" Click="@ExportClick" Size="Radzen.ButtonSize.Small" />
+                }
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn SizeMD="6">
+            <RadzenFormField Text="Pesquisar" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @oninput="@Search" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+
+        <RadzenColumn SizeMD="3">
+            <RadzenFormField Text="Tipo da Licença" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                <ChildContent>
+                    <RadzenDropDown TValue="string" Change="@AtividadeChange" @bind-Value=@tipoLicenca Name="TipoLicenca" Data=@appService.GetLicencasTipo() Style="width: 100%;" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+
+        <RadzenColumn SizeMD="3">
+            <RadzenFormField Text="Estado da Licença" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                <ChildContent>
+                    <RadzenDropDown TValue="string" Change="@EstadoChange" @bind-Value=@estadoLicenca Name="TipoLicenca" Data=@appService.GetEstados() Style="width: 100%;" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn SizeMD=12>
+            
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+<RadzenDataGrid @ref="grid"
+                AllowFiltering="true"
+                FilterMode="FilterMode.Advanced"
+                AllowPaging="true"
+                AllowSorting="true"
+                AllowRowSelectOnRowClick="@allowRowSelectOnRowClick"
+                ShowPagingSummary="true"
+                PageSize="10"
+                PageSizeOptions=@(new int[]{5, 10, 20, 30})
+                Data="@entities"
+                TItem="LicencaLoja"
+                SelectionMode="DataGridSelectionMode.Multiple"
+                @bind-Value="@selectedEntities"
+                EmptyText="Nenhum registo  encontrado">
+
+    <Columns>
+        <RadzenDataGridColumn TItem="LicencaLoja" Width="40px" Sortable="false" Filterable="false">
+            <HeaderTemplate>
+                <RadzenCheckBox TriState="false"
+                                TValue="bool"
+                                Value="@(entities.Any(i => selectedEntities != null && selectedEntities.Contains(i)))"
+                                Change="@(args => selectedEntities = args ? entities?.ToList() : null)" />
+            </HeaderTemplate>
+            <Template Context="data">
+                <RadzenCheckBox TriState="false"
+                                Value="@(selectedEntities != null && selectedEntities.Contains(data))"
+                                TValue="bool"
+                                Change=@(args => { if(!allowRowSelectOnRowClick) { grid.SelectRow(data); }}) />
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Visible="showPrint" TItem="LicencaLoja" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Print">
+            <Template Context="entity">
+                <a href="@($"{navegation.BaseUri}api/Lojas/LojaReport/{entity.Id}")" target="_blank">
+                    <RadzenIcon Icon="print" IconStyle="IconStyle.Primary" />
+                </a>
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Visible="showPrint" TItem="LicencaLoja" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Validar">
+            <Template Context="entity">
+                <RadzenButton ButtonStyle="ButtonStyle.Success"
+                              Icon="done_all" Size="ButtonSize.Medium"
+                              Shade="Shade.Lighter"
+                              Variant="Variant.Flat"
+                              Click=@(args => ValidarButtonClick(args, entity)) @onclick:stopPropagation="true" />
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Property="NumLicenca" TItem="LicencaLoja" Title="Nº Licença" Frozen="true" Width="145px">
+            <Template Context="entity">
+                @if(entity.Tipo>=0){
+                  <p>UG/15/@entity.NumLicenca.ToString().PadLeft(3,'0')/LEVP/@DateTime.Now.Year</p>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="LicencaLoja"
+                              Property="Empresa.Designacao"
+                              Title="Empresa"
+                              Frozen="true" />
+
+        <RadzenDataGridColumn TItem="LicencaLoja"
+                                Width="130px"
+                              Property="Empresa.NIF"
+                              Title="NIF"
+                              Frozen="true" />
+
+        <RadzenDataGridColumn TItem="LicencaLoja"
+                              Property="TipoLicenca"
+                              Title="Actividade"
+                              Frozen="true" />
+
+        <RadzenDataGridColumn TItem="LicencaLoja"
+                              Property="LocalAtividade"
+                              Title="Local"
+                              Frozen="true" />
+
+        <RadzenDataGridColumn TItem="LicencaLoja" Title="Validade" Width="110px" Property="DataValidade">
+            <Template Context="entity">
+                <p>@entity.DataValidade.ToShortDateString()</p>
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="LicencaLoja"
+        Width="100px"
+                              Property="Situacao"
+                              Title="Estado"
+                              Frozen="true" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    string title = "Licenças de Equipamentos Rodoviários e Inst. Afins";
+    IEnumerable<LicencaLoja> entities;
+    IList<LicencaLoja> selectedEntities;
+    RadzenDataGrid<LicencaLoja> grid;
+    bool allowRowSelectOnRowClick = false;
+    string search = "";
+    string tipoLicenca = "Todos";
+    string estadoLicenca = "Todos";
+    string deleteText => $"Deletar {selectedEntities?.Count} itens selecionados";
+
+    [Inject]
+    protected SecurityService Security { get; set; }
+    string role;
+    bool showPrint = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        role = Security.User.Roles.FirstOrDefault().Name;
+        showPrint = role == "administrador" || role == "director" ? true : false;
+        await LoadEntities();
+    }
+
+    async Task LoadEntities() =>
+        entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.TipoLicenca.Contains(@0) || i.Empresa.Designacao.Contains(@0) || i.Empresa.NIF.Contains(@0)", FilterParameters = new object[] { search } });
+
+    async Task Search(ChangeEventArgs args)
+    {
+        search = $"{args.Value}";
+        entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.TipoLicenca.Contains(@0) || i.Empresa.Designacao.Contains(@0) || i.Empresa.NIF.Contains(@0)", FilterParameters = new object[] { search } });
+    }
+
+    async Task AtividadeChange(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        var filter = value.ToString() == "Todos" ? "" : value.ToString();
+        var filter2 = estadoLicenca == "Todos" ? "" : estadoLicenca;
+        entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.TipoLicenca.Contains(@0) && i.Situacao.Contains(@1)", FilterParameters = new object[] { filter, filter2 } });
+    }
+
+    async Task EstadoChange(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        var filter = value.ToString() == "Todos" ? "" : value.ToString();
+        var filter2 = tipoLicenca == "Todos" ? "" : tipoLicenca;
+        if(value.ToString()=="Expirado")
+            entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.DataValidade <= @0", FilterParameters = new object[] { DateTime.Now } });
+        else
+            entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.Situacao.Contains(@0) && i.TipoLicenca.Contains(@1)", FilterParameters = new object[] { filter, filter2 } });
+    }
+
+    async Task AddButtonClick()
+    {
+        await dialog.OpenAsync<CreateUpdate>("Emitir Licença", null, new DialogOptions() { Width = "900px" });
+        await grid.Reload();
+    }
+
+    async Task ValidarButtonClick(MouseEventArgs args, LicencaLoja entity)
+    {
+        if (await dialog.Confirm("Validar licença?", "Validar") == true)
+        {
+            if(entity.DataValidade<DateTime.Now)
+                entity.DataValidade=entity.DataValidade.AddYears(1);
+            entity.Situacao = "Emitido";
+            var res = await service.UpdateLicencaLoja(entity.Id, entity);
+            await grid.Reload();
+        }
+    }
+
+    async Task DeleteButtonClick(MouseEventArgs args, LicencaLoja entity)
+    {
+        navegation.NavigateTo($"{navegation.BaseUri}api/Lojas/LojaReport");
+
+    }
+
+    async Task DeleteSelectedEntities()
+    {
+        //int count = 0;
+        //if (await dialog.Confirm("Ao clicar em OK, os registros selecionados serao removidos da Base de Dados.", "Deletar") == true)
+        //{
+        //    foreach (var item in selectedEntities!)
+        //    {
+        //        var res = await service.DeleteEstacaoServico(item.Id);
+        //        if (res is not null) ++count;
+        //    }
+        //    notification.Notify(NotificationSeverity.Success, "Sucesso", $"{count} Registros deletados com sucesso!");
+        //    selectedEntities = null;
+        //    await grid.Reload();
+        //}
+    }
+
+    async Task ExportClick()
+    {
+        await service.ExportLicencaLojasToExcel(new Query
+            {
+                Filter = $@"{(string.IsNullOrEmpty(grid.Query.Filter) ? "true" : grid.Query.Filter)}",
+                OrderBy = $"{grid.Query.OrderBy}",
+                Select = string.Join(",", grid.ColumnsCollection.Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property)).Select(c => c.Property.Contains(".") ? c.Property + " as " + c.Property.Replace(".", "") : c.Property))
+            }, title);
+    }
+}

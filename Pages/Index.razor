@@ -1,0 +1,48 @@
+@page "/"
+
+@attribute [Authorize]
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject ContextMenuService ContextMenuService
+@inject TooltipService TooltipService
+@inject NotificationService NotificationService
+@inject ApplicationServices appService
+
+<PageTitle>Index</PageTitle>
+
+<RadzenRow Gap="5" RowGap="5">
+    <RadzenColumn Size="12">
+        <RadzenText Text="SEJA BEM VINDO" TextStyle="Radzen.Blazor.TextStyle.DisplayH2" TagName="Radzen.Blazor.TagName.Auto"></RadzenText>
+    </RadzenColumn>
+</RadzenRow>
+<h3>Equipamentos Rodoviários e Instalações Afins</h3>
+<RadzenRow>
+    @foreach (var item in items)
+    {
+        <RadzenColumn SizeMD="2">
+            <HomeInfo Model="item" />
+        </RadzenColumn>
+    }
+</RadzenRow>
+
+@code {
+
+    [Inject]
+    protected SecurityService Security { get; set; }
+
+    List<HomeInfoModel> items = new();
+    HomeInfoModel modelCartoes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await appService.GetInfoModels();
+        modelCartoes = new()
+            {
+                Title = "Cartões de Subvenção",
+                TotalGeral = 677,
+                TotalValido = 234,
+                TotalInvalido = 365
+            };
+    }
+}
