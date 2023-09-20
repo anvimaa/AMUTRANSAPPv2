@@ -185,7 +185,8 @@
             else
             {
                 entity.DataCadastro = DateTime.Now;
-                entity.DataValidade = DateTime.Now.AddYears(1);
+
+                entity.DataValidade = new DateTime(DateTime.Now.Year + 1, 12, 31);
                 entity.Situacao = "Em Espera";
                 entity.Tipo = appService.GetLicencas().IndexOf(entity.TipoLicenca);
                 entity.Valor = 26400;
@@ -221,7 +222,7 @@
 
                 licencaLoja.EmpresaId = res.Id;
                 licencaLoja.DataCadastro = DateTime.Now;
-                licencaLoja.DataValidade = DateTime.Now.AddYears(1);
+                licencaLoja.DataValidade = new DateTime(DateTime.Now.Year + 1, 12, 31); ;
                 licencaLoja.Situacao = "Em Espera";
                 licencaLoja.Tipo = appService.GetLicencas().IndexOf(empresa.Atividade);
                 licencaLoja.TipoLicenca = res.Atividade;

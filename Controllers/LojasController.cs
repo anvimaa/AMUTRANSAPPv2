@@ -64,7 +64,7 @@ public class LojasController : ControllerBase
 
         var path = Path.Combine(_webHostEnvironment.WebRootPath, "Reports", reportFile);
 
-        var dtHoje = licenca.DataValidade.AddYears(-1);
+        var dtHoje = DateTime.Now;
         var hoje = $"{dtHoje.Day} de {_applicationServices.GetMonths()[dtHoje.Month]} de {dtHoje.Year}";
 
         var dtValidade = licenca.DataValidade;

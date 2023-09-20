@@ -13,11 +13,12 @@
         <RadzenColumn Size="12" SizeMD="6">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
                 <RadzenText Text="@title" TextStyle="TextStyle.H3" TagName="TagName.H1" style="margin: 0" />
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" Text="Cadastrar" Click="@AddButtonClick" Variant="Variant.Flat" />
+                
             </RadzenStack>
         </RadzenColumn>
         <RadzenColumn Size="12" SizeMD="6">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" Text="Cadastrar" Click="@AddButtonClick" Variant="Variant.Flat" />
                 @if (selectedEntities is not null && selectedEntities?.Count > 0)
                 {
                     <RadzenButton Icon="delete" Text="@deleteText" Click="@DeleteSelectedEntities" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Danger" Size="Radzen.ButtonSize.Small" />
@@ -85,21 +86,35 @@
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="Empresa"
-                                          Property="NIF"
-                                          Title="NIF"
+                                          Property="Sede"
+                                          Title="Localização"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="Empresa"
                                           Property="Atividade"
                                           Title="Atividade"
+                                          Frozen="true"
+                                          Width="160px"/>
+
+                    <RadzenDataGridColumn TItem="Empresa"
+                                          Width="130px"
+                                          Property="NIF"
+                                          Title="NIF"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="Empresa"
+                                          Width="120px"
+                                          Property="Contacto"
+                                          Title="Contacto"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="Empresa"
+                                          Width="150px"
                                           Property="DataCadastro"
                                           Title="Data"
                                           Frozen="true" />
 
-                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="70px" TextAlign="TextAlign.Center" Title="Detalhes">
+                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Detalhes">
                         <Template Context="entity">
                             <a href="/empresas/@entity.Id">
                                 <RadzenIcon Icon="edit" />
@@ -107,7 +122,7 @@
                         </Template>
                     </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="70px" TextAlign="TextAlign.Center" Title="Editar">
+                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Editar">
                         <Template Context="entity">
 
                             <RadzenButton ButtonStyle="ButtonStyle.Warning"
@@ -119,7 +134,7 @@
                     </RadzenDataGridColumn>
 
 
-                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="70px" TextAlign="TextAlign.Center" Title="Deletar">
+                    <RadzenDataGridColumn TItem="Empresa" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Deletar">
                         <Template Context="entity">
 
                             <RadzenButton ButtonStyle="ButtonStyle.Danger"

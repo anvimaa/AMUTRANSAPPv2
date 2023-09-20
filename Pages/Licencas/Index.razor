@@ -57,7 +57,7 @@
 
     <RadzenRow>
         <RadzenColumn SizeMD=12>
-            
+
         </RadzenColumn>
     </RadzenRow>
 </RadzenStack>
@@ -113,8 +113,9 @@
 
         <RadzenDataGridColumn Property="NumLicenca" TItem="LicencaLoja" Title="Nº Licença" Frozen="true" Width="145px">
             <Template Context="entity">
-                @if(entity.Tipo>=0){
-                  <p>UG/15/@entity.NumLicenca.ToString().PadLeft(3,'0')/LEVP/@DateTime.Now.Year</p>
+                @if (entity.Tipo >= 0)
+                {
+                    <p>UG/15/@entity.NumLicenca.ToString().PadLeft(3,'0')/LEVP/@DateTime.Now.Year</p>
                 }
             </Template>
         </RadzenDataGridColumn>
@@ -125,7 +126,7 @@
                               Frozen="true" />
 
         <RadzenDataGridColumn TItem="LicencaLoja"
-                                Width="130px"
+                              Width="130px"
                               Property="Empresa.NIF"
                               Title="NIF"
                               Frozen="true" />
@@ -147,7 +148,7 @@
         </RadzenDataGridColumn>
 
         <RadzenDataGridColumn TItem="LicencaLoja"
-        Width="100px"
+                              Width="100px"
                               Property="Situacao"
                               Title="Estado"
                               Frozen="true" />
@@ -199,7 +200,7 @@
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
         var filter = value.ToString() == "Todos" ? "" : value.ToString();
         var filter2 = tipoLicenca == "Todos" ? "" : tipoLicenca;
-        if(value.ToString()=="Expirado")
+        if (value.ToString() == "Expirado")
             entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.DataValidade <= @0", FilterParameters = new object[] { DateTime.Now } });
         else
             entities = await service.GetLicencaLojas(new Query { Filter = $@"i => i.Situacao.Contains(@0) && i.TipoLicenca.Contains(@1)", FilterParameters = new object[] { filter, filter2 } });
@@ -215,8 +216,8 @@
     {
         if (await dialog.Confirm("Validar licença?", "Validar") == true)
         {
-            if(entity.DataValidade<DateTime.Now)
-                entity.DataValidade=entity.DataValidade.AddYears(1);
+            if (entity.DataValidade < DateTime.Now)
+                entity.DataValidade = new DateTime(entity.DataValidade.Year + 1, 12, 31);
             entity.Situacao = "Emitido";
             var res = await service.UpdateLicencaLoja(entity.Id, entity);
             await grid.Reload();
