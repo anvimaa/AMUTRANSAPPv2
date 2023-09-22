@@ -74,12 +74,12 @@ public class ApplicationServices
 
     public List<string> GetLicencas()
     {
-        return new List<string>() { "Loja de Venda de Peças", "Escola de Condução", "Oficina Mecânica", "Estação de Serviço", "Recachoutagem" };
+        return new List<string>() { "Loja de Venda de Peças", "Escola de Condução", "Oficina Mecânica", "Estação de Serviço", "Recauchutagem", "Socateiras" };
     }
 
     public List<string> GetLicencasTipo()
     {
-        return new List<string>() { "Todos", "Loja de Venda de Peças", "Escola de Condução", "Oficina Mecânica", "Estação de Serviço", "Recachoutagem" };
+        return new List<string>() { "Todos", "Loja de Venda de Peças", "Escola de Condução", "Oficina Mecânica", "Estação de Serviço", "Recauchutagem", "Socateiras" };
     }
 
     public List<string> GetEstados()
@@ -112,7 +112,8 @@ public class ApplicationServices
             { 1, "Escola de Condução" },
             { 2, "Oficina Mecânica" },
             { 3, "Estação de Serviço" },
-            { 4, "Recachoutagem" }
+            { 4, "Recauchutagem" },
+            { 5, "Recolha de Peças Sobressalentes" },
         };
     }
 }

@@ -812,6 +812,9 @@ namespace AMUTRANSAPP
                 case 4:
                     numlicenca = Context.LicencaLojas.Where(i => i.Tipo == 4).ToList().Count() + 1;
                     break;
+                case 5:
+                    numlicenca = Context.LicencaLojas.Where(i => i.Tipo == 5).ToList().Count() + 1;
+                    break;
                 default:
                     break;
             }
