@@ -59,6 +59,14 @@ namespace AMUTRANSAPP.Data
             builder.Entity<AMUTRANSAPP.Models.AMUTRANSPORTES.Movimento>()
               .Property(p => p.DataResposta)
               .HasColumnType("datetime");
+
+            builder.Entity<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso>()
+              .Property(p => p.DataEntrada)
+              .HasColumnType("datetime");
+
+            builder.Entity<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso>()
+              .Property(p => p.DataSaida)
+              .HasColumnType("datetime");
             this.OnModelBuilding(builder);
         }
 
@@ -75,6 +83,8 @@ namespace AMUTRANSAPP.Data
         public DbSet<AMUTRANSAPP.Models.AMUTRANSPORTES.Movimento> Movimentos { get; set; }
 
         public DbSet<AMUTRANSAPP.Models.AMUTRANSPORTES.Paragem> Paragems { get; set; }
+
+        public DbSet<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> CarroPresos { get; set; }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {

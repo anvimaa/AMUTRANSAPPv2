@@ -116,5 +116,19 @@ namespace AMUTRANSAPP.Controllers
         {
             return ToExcel(ApplyQuery(await service.GetParagems(), Request.Query), fileName);
         }
+
+        [HttpGet("/export/AMUTRANSPORTES/carropresos/csv")]
+        [HttpGet("/export/AMUTRANSPORTES/carropresos/csv(fileName='{fileName}')")]
+        public async Task<FileStreamResult> ExportCarroPresosToCSV(string fileName = null)
+        {
+            return ToCSV(ApplyQuery(await service.GetCarroPresos(), Request.Query), fileName);
+        }
+
+        [HttpGet("/export/AMUTRANSPORTES/carropresos/excel")]
+        [HttpGet("/export/AMUTRANSPORTES/carropresos/excel(fileName='{fileName}')")]
+        public async Task<FileStreamResult> ExportCarroPresosToExcel(string fileName = null)
+        {
+            return ToExcel(ApplyQuery(await service.GetCarroPresos(), Request.Query), fileName);
+        }
     }
 }

@@ -1232,5 +1232,166 @@ namespace AMUTRANSAPP
 
             return itemToDelete;
         }
+    
+        public async Task ExportCarroPresosToExcel(Query query = null, string fileName = null)
+        {
+            navigationManager.NavigateTo(query != null ? query.ToUrl($"export/amutransportes/carropresos/excel(fileName='{(!string.IsNullOrEmpty(fileName) ? UrlEncoder.Default.Encode(fileName) : "Export")}')") : $"export/amutransportes/carropresos/excel(fileName='{(!string.IsNullOrEmpty(fileName) ? UrlEncoder.Default.Encode(fileName) : "Export")}')", true);
+        }
+
+        public async Task ExportCarroPresosToCSV(Query query = null, string fileName = null)
+        {
+            navigationManager.NavigateTo(query != null ? query.ToUrl($"export/amutransportes/carropresos/csv(fileName='{(!string.IsNullOrEmpty(fileName) ? UrlEncoder.Default.Encode(fileName) : "Export")}')") : $"export/amutransportes/carropresos/csv(fileName='{(!string.IsNullOrEmpty(fileName) ? UrlEncoder.Default.Encode(fileName) : "Export")}')", true);
+        }
+
+        partial void OnCarroPresosRead(ref IQueryable<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> items);
+
+        public async Task<IQueryable<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso>> GetCarroPresos(Query query = null)
+        {
+            var items = Context.CarroPresos.AsQueryable();
+
+
+            if (query != null)
+            {
+                if (!string.IsNullOrEmpty(query.Expand))
+                {
+                    var propertiesToExpand = query.Expand.Split(',');
+                    foreach(var p in propertiesToExpand)
+                    {
+                        items = items.Include(p.Trim());
+                    }
+                }
+
+                ApplyQuery(ref items, query);
+            }
+
+            OnCarroPresosRead(ref items);
+
+            return await Task.FromResult(items);
+        }
+
+        partial void OnCarroPresoGet(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+        partial void OnGetCarroPresoById(ref IQueryable<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> items);
+
+
+        public async Task<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> GetCarroPresoById(int id)
+        {
+            var items = Context.CarroPresos
+                              .AsNoTracking()
+                              .Where(i => i.Id == id);
+
+ 
+            OnGetCarroPresoById(ref items);
+
+            var itemToReturn = items.FirstOrDefault();
+
+            OnCarroPresoGet(itemToReturn);
+
+            return await Task.FromResult(itemToReturn);
+        }
+
+        partial void OnCarroPresoCreated(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+        partial void OnAfterCarroPresoCreated(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+
+        public async Task<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> CreateCarroPreso(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso carropreso)
+        {
+            OnCarroPresoCreated(carropreso);
+
+            var existingItem = Context.CarroPresos
+                              .Where(i => i.Id == carropreso.Id)
+                              .FirstOrDefault();
+
+            if (existingItem != null)
+            {
+               throw new Exception("Item already available");
+            }            
+
+            try
+            {
+                Context.CarroPresos.Add(carropreso);
+                Context.SaveChanges();
+            }
+            catch
+            {
+                Context.Entry(carropreso).State = EntityState.Detached;
+                throw;
+            }
+
+            OnAfterCarroPresoCreated(carropreso);
+
+            return carropreso;
+        }
+
+        public async Task<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> CancelCarroPresoChanges(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item)
+        {
+            var entityToCancel = Context.Entry(item);
+            if (entityToCancel.State == EntityState.Modified)
+            {
+              entityToCancel.CurrentValues.SetValues(entityToCancel.OriginalValues);
+              entityToCancel.State = EntityState.Unchanged;
+            }
+
+            return item;
+        }
+
+        partial void OnCarroPresoUpdated(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+        partial void OnAfterCarroPresoUpdated(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+
+        public async Task<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> UpdateCarroPreso(int id, AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso carropreso)
+        {
+            OnCarroPresoUpdated(carropreso);
+
+            var itemToUpdate = Context.CarroPresos
+                              .Where(i => i.Id == carropreso.Id)
+                              .FirstOrDefault();
+
+            if (itemToUpdate == null)
+            {
+               throw new Exception("Item no longer available");
+            }
+                
+            var entryToUpdate = Context.Entry(itemToUpdate);
+            entryToUpdate.CurrentValues.SetValues(carropreso);
+            entryToUpdate.State = EntityState.Modified;
+
+            Context.SaveChanges();
+
+            OnAfterCarroPresoUpdated(carropreso);
+
+            return carropreso;
+        }
+
+        partial void OnCarroPresoDeleted(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+        partial void OnAfterCarroPresoDeleted(AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso item);
+
+        public async Task<AMUTRANSAPP.Models.AMUTRANSPORTES.CarroPreso> DeleteCarroPreso(int id)
+        {
+            var itemToDelete = Context.CarroPresos
+                              .Where(i => i.Id == id)
+                              .FirstOrDefault();
+
+            if (itemToDelete == null)
+            {
+               throw new Exception("Item no longer available");
+            }
+
+            OnCarroPresoDeleted(itemToDelete);
+
+
+            Context.CarroPresos.Remove(itemToDelete);
+
+            try
+            {
+                Context.SaveChanges();
+            }
+            catch
+            {
+                Context.Entry(itemToDelete).State = EntityState.Unchanged;
+                throw;
+            }
+
+            OnAfterCarroPresoDeleted(itemToDelete);
+
+            return itemToDelete;
+        }
         }
 }
