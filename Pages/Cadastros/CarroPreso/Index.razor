@@ -1,0 +1,232 @@
+@page "/carro-preso"
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+@inject IJSRuntime JSRuntime
+@inject ApplicationServices appService
+@attribute [Authorize]
+
+<PageTitle>@title</PageTitle>
+
+<RadzenStack>
+    <RadzenRow AlignItems="AlignItems.Center">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenText Text="@title" TextStyle="TextStyle.H3" TagName="TagName.H1" style="margin: 0" />
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" Text="Cadastrar" Click="@AddButtonClick" Variant="Variant.Flat" />
+                @if (selectedEntities is not null && selectedEntities?.Count > 0)
+                {
+                    <RadzenButton Icon="delete" Text="@deleteText" Click="@DeleteSelectedEntities" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Danger" Size="Radzen.ButtonSize.Small" />
+                }
+                @if (entities is not null && entities.Count() > 0)
+                {
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Text="Exportar" Value="xlsx" Icon="border_all" Click="@ExportClick" Size="Radzen.ButtonSize.Small" />
+                }
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn SizeMD="8">
+            <RadzenFormField Text="Pesquisar" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @oninput="@Search" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+
+        <RadzenColumn SizeMD="4">
+            <RadzenFormField Text="Atividade" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                <ChildContent>
+                    <RadzenDropDown TValue="string" Change="@AtividadeChange" @bind-Value=@tipoLicenca Name="TipoLicenca" Data=@appService.GetLicencasTipo() Style="width: 100%;" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn SizeMD=12>
+            <RadzenDataGrid @ref="grid"
+                            AllowFiltering="true"
+                            FilterMode="FilterMode.Advanced"
+                            AllowPaging="true"
+                            AllowSorting="true"
+                            AllowRowSelectOnRowClick="@allowRowSelectOnRowClick"
+                            ShowPagingSummary="true"
+                            PageSize="10"
+                            PageSizeOptions=@(new int[]{5, 10, 20, 30})
+                            Data="@entities"
+                            TItem="CarroPreso"
+                            SelectionMode="DataGridSelectionMode.Multiple"
+                            @bind-Value="@selectedEntities" EmptyText="Nenhum registo  encontrado ">
+                <Columns>
+                    <RadzenDataGridColumn TItem="CarroPreso" Width="60px" Sortable="false" Filterable="false">
+                        <HeaderTemplate>
+                            <RadzenCheckBox TriState="false"
+                                            TValue="bool"
+                                            Value="@(entities.Any(i => selectedEntities != null && selectedEntities.Contains(i)))"
+                                            Change="@(args => selectedEntities = args ? entities?.ToList() : null)" />
+                        </HeaderTemplate>
+                        <Template Context="data">
+                            <RadzenCheckBox TriState="false"
+                                            Value="@(selectedEntities != null && selectedEntities.Contains(data))"
+                                            TValue="bool"
+                                            Change=@(args => { if(!allowRowSelectOnRowClick) { grid.SelectRow(data); }}) />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Property="Designacao"
+                                          Title="Designacao"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Property="Sede"
+                                          Title="Localiza��o"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Property="Atividade"
+                                          Title="Atividade"
+                                          Frozen="true"
+                                          Width="160px"/>
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Width="130px"
+                                          Property="NIF"
+                                          Title="NIF"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Width="120px"
+                                          Property="Contacto"
+                                          Title="Contacto"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="CarroPreso"
+                                          Width="150px"
+                                          Property="DataCadastro"
+                                          Title="Data"
+                                          Frozen="true" />
+
+                    <RadzenDataGridColumn TItem="CarroPreso" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Detalhes">
+                        <Template Context="entity">
+                            <a href="/CarroPresos/@entity.Id">
+                                <RadzenIcon Icon="edit" />
+                            </a>
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="CarroPreso" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Editar">
+                        <Template Context="entity">
+
+                            <RadzenButton ButtonStyle="ButtonStyle.Warning"
+                                          Icon="edit" Size="ButtonSize.Medium"
+                                          Shade="Shade.Lighter"
+                                          Variant="Variant.Flat"
+                                          Click=@(args => EditButtonClick(args, entity)) @onclick:stopPropagation="true" />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+
+                    <RadzenDataGridColumn TItem="CarroPreso" Filterable="false" Sortable="false" Width="50px" TextAlign="TextAlign.Center" Title="Deletar">
+                        <Template Context="entity">
+
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                          Icon="delete" Size="ButtonSize.Medium"
+                                          Shade="Shade.Lighter"
+                                          Variant="Variant.Flat"
+                                          Click=@(args => DeleteButtonClick(args, entity)) @onclick:stopPropagation="true" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    string title = "Carros Apreendidos e Notificados";
+    IEnumerable<CarroPreso> entities;
+    IList<CarroPreso> selectedEntities;
+    RadzenDataGrid<CarroPreso> grid;
+    bool allowRowSelectOnRowClick = false;
+    string search = "";
+    string deleteText => $"Deletar {selectedEntities?.Count} itens selecionados";
+    string tipoLicenca = "Todos";
+
+    protected override async Task OnInitializedAsync() => await LoadEntities();
+
+    async Task AtividadeChange(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        var filter = value.ToString() == "Todos" ? "" : value.ToString();
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Atividade.Contains(@0)", FilterParameters = new object[] { filter } });
+    }
+
+    async Task LoadEntities() =>
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Designacao.Contains(@0) || NIF.Contains(@0)", FilterParameters = new object[] { search } });
+
+    async Task Search(ChangeEventArgs args)
+    {
+        search = $"{args.Value}";
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Designacao.Contains(@0) || NIF.Contains(@0)", FilterParameters = new object[] { search } });
+    }
+
+    async Task AddButtonClick()
+    {
+        await dialog.OpenAsync<CreateUpdate>("Nova CarroPreso", null, new DialogOptions() { Width = "750px" });
+        await grid.Reload();
+    }
+
+    async Task EditButtonClick(MouseEventArgs args, CarroPreso entity)
+    {
+        await dialog.OpenAsync<CreateUpdate>("Editar CarroPreso",
+        new Dictionary<string, object> { { "IdEntity", entity.Id } },
+        new DialogOptions() { Width = "750px" });
+        await grid.Reload();
+    }
+
+    async Task DeleteButtonClick(MouseEventArgs args, CarroPreso entity)
+    {
+        if (await dialog.Confirm("Tens a certeza que pretendes remover esse registro?", "Deletar") == true)
+        {
+            var deleteResult = await service.DeleteCarroPreso(entity.Id);
+
+            if (deleteResult != null)
+            {
+                await grid.Reload();
+            }
+        }
+    }
+
+    async Task DeleteSelectedEntities()
+    {
+        int count = 0;
+        if (await dialog.Confirm("Ao clicar em OK, os registros selecionados serao removidos da Base de Dados.", "Deletar") == true)
+        {
+            foreach (var item in selectedEntities!)
+            {
+                var res = await service.DeleteCarroPreso(item.Id);
+                if (res is not null) ++count;
+            }
+            notification.Notify(NotificationSeverity.Success, "Sucesso", $"{count} Registros deletados com sucesso!");
+            selectedEntities = null;
+            await grid.Reload();
+        }
+    }
+
+    async Task ExportClick()
+    {
+        await service.ExportCarroPresosToExcel(new Query
+            {
+                Filter = $@"{(string.IsNullOrEmpty(grid.Query.Filter) ? "true" : grid.Query.Filter)}",
+                OrderBy = $"{grid.Query.OrderBy}",
+                Select = string.Join(",", grid.ColumnsCollection.Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property)).Select(c => c.Property.Contains(".") ? c.Property + " as " + c.Property.Replace(".", "") : c.Property))
+            }, title);
+    }
+}

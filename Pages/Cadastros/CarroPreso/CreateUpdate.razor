@@ -1,0 +1,139 @@
+@page "/create-carro-preso"
+@attribute [Authorize]
+
+@inject AMUTRANSPORTESService service
+@inject DialogService dialog
+@inject NotificationService notification
+@inject ApplicationServices appService
+
+<PageTitle>Paragens</PageTitle>
+
+<RadzenColumn SizeMD=12>
+    <RadzenAlert Shade="Shade.Lighter" Variant="Radzen.Variant.Filled" Size="AlertSize.Small" AlertStyle="AlertStyle.Danger" Visible="@errorVisible">
+        Erro ao Salvar: @errorMessage...
+    </RadzenAlert>
+
+    <RadzenTemplateForm TItem="Empresa" Data="@entity" Visible="@(entity != null)" Submit="@FormSubmit">
+        <RadzenStack>
+
+            <RadzenFormField Text="Designação da Empresa" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Designacao" Name="Designacao" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Designacao" Text="Campo Obrigatorio" Popup="true" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenFormField Text="NIF da Empresa" Variant="Radzen.Variant.Flat">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.NIF" Name="NIF" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="NIF" Text="Campo Obrigatorio" Popup="true" />
+                </Helper>
+            </RadzenFormField>
+
+            <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Responsável da Empresa" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Responsavel" Name="Responsavel" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Responsavel" Text="Campo Obrigatorio" Popup="true" />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Contacto" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Contacto" Name="Contacto" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Contacto" Text="Campo Obrigatorio" Popup="true" />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Sede da Empresa" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenTextBox style="display: block; width: 100%" @bind-Value="@entity.Sede" Name="Sede" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Sede" Text="Campo Obrigatorio" Popup="true" />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField Text="Actividade da Empresa" Variant="Radzen.Variant.Flat" Style="width: 100%">
+                        <ChildContent>
+                            <RadzenDropDown @bind-Value=@entity.Atividade Name="Atividade" Data=@appService.GetLicencas() Style="width: 100%;" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Atividade" Text="Campo Obrigatorio" Popup="true" />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+
+        </RadzenStack>
+        <RadzenStack style="margin-top:1rem;" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" ButtonType="ButtonType.Submit" Icon="save" Text="Salvar" Variant="Radzen.Variant.Filled" />
+            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Cancelar" Variant="Radzen.Variant.Filled" Click="@CancelButtonClick" Icon="cancel" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenColumn>
+
+@code {
+    [Parameter]
+    public int IdEntity { get; set; } = 0;
+
+    Empresa entity = new();
+    bool errorVisible;
+    string errorMessage="";
+    bool isEdit = false;
+    List<string> atividades = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        atividades = appService.GetLicencas();
+
+        if(IdEntity>0)
+        {
+            entity = await service.GetEmpresaById(IdEntity);
+            isEdit = true;
+        }
+    }
+
+    async Task FormSubmit()
+    {
+        try
+        {
+            Empresa res;
+            if (isEdit){
+                res = await service.UpdateEmpresa(IdEntity, entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Empresa Editado com sucesso!");
+            }
+            else{
+                entity.DataCadastro = DateTime.Now;
+                res = await service.CreateEmpresa(entity);
+                notification.Notify(NotificationSeverity.Success, "Sucesso", "Empresa Cadastrado com sucesso!");
+            }
+            dialog.Close(res);
+        }
+        catch (Exception ex)
+        {
+            errorVisible = true;
+            errorMessage=ex.Message;
+        }
+    }
+
+    protected async Task CancelButtonClick(MouseEventArgs args)
+    {
+        dialog.Close(null);
+    }
+}
