@@ -80,36 +80,36 @@
                     </RadzenDataGridColumn>
 
                     <RadzenDataGridColumn TItem="CarroPreso"
-                                          Property="Designacao"
-                                          Title="Designacao"
+                                          Property="Matricula"
+                                          Title="Matricula"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="CarroPreso"
-                                          Property="Sede"
-                                          Title="Localiza��o"
+                                          Property="Marca"
+                                          Title="Marca"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="CarroPreso"
-                                          Property="Atividade"
-                                          Title="Atividade"
+                                          Property="Modelo"
+                                          Title="Modelo"
                                           Frozen="true"
                                           Width="160px"/>
 
                     <RadzenDataGridColumn TItem="CarroPreso"
                                           Width="130px"
-                                          Property="NIF"
-                                          Title="NIF"
+                                          Property="Cor"
+                                          Title="Cor"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="CarroPreso"
                                           Width="120px"
-                                          Property="Contacto"
-                                          Title="Contacto"
+                                          Property="Estado"
+                                          Title="Estado"
                                           Frozen="true" />
 
                     <RadzenDataGridColumn TItem="CarroPreso"
                                           Width="150px"
-                                          Property="DataCadastro"
+                                          Property="DataEntrada"
                                           Title="Data"
                                           Frozen="true" />
 
@@ -165,27 +165,27 @@
     {
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
         var filter = value.ToString() == "Todos" ? "" : value.ToString();
-        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Atividade.Contains(@0)", FilterParameters = new object[] { filter } });
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Estado.Contains(@0)", FilterParameters = new object[] { filter } });
     }
 
     async Task LoadEntities() =>
-        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Designacao.Contains(@0) || NIF.Contains(@0)", FilterParameters = new object[] { search } });
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Matricula.Contains(@0)", FilterParameters = new object[] { search } });
 
     async Task Search(ChangeEventArgs args)
     {
         search = $"{args.Value}";
-        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Designacao.Contains(@0) || NIF.Contains(@0)", FilterParameters = new object[] { search } });
+        entities = await service.GetCarroPresos(new Query { Filter = $@"i => i.Matricula.Contains(@0)", FilterParameters = new object[] { search } });
     }
 
     async Task AddButtonClick()
     {
-        await dialog.OpenAsync<CreateUpdate>("Nova CarroPreso", null, new DialogOptions() { Width = "750px" });
+        await dialog.OpenAsync<CreateUpdate>("Nova Carro Preso", null, new DialogOptions() { Width = "750px" });
         await grid.Reload();
     }
 
     async Task EditButtonClick(MouseEventArgs args, CarroPreso entity)
     {
-        await dialog.OpenAsync<CreateUpdate>("Editar CarroPreso",
+        await dialog.OpenAsync<CreateUpdate>("Editar Carro Preso",
         new Dictionary<string, object> { { "IdEntity", entity.Id } },
         new DialogOptions() { Width = "750px" });
         await grid.Reload();
